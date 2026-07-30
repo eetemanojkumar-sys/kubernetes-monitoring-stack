@@ -1,0 +1,27 @@
+apiVersion: monitoring.coreos.com/v1
+kind: PrometheusRule
+metadata:
+  name: monitoring-demo-alerts
+  namespace: monitoring
+  labels:
+    release: monitoring
+spec:
+  groups:
+    - name: monitoring-demo.rules
+      rules:
+        - alert: MonitoringDemoHighCPU
+          expr: |
+            sum(
+              rate(
+                container_cpu_usage_seconds_total{
+                  namespace="default",
+                  pod=~"monitoring-demo-.*"
+                }[1m]
+              )
+            ) > 0.20
+          for: 1m
+          labels:
+            severity: warning
+          annotations:
+            summary: "Monitoring demo CPU usage is high"
+            description: "The monitoring-demo workload has used more than 200m CPU for over 1 minute."
